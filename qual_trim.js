@@ -1,5 +1,7 @@
+//CALL MODULE
 const pythonBridge = require('python-bridge');
 
+//CREATE PYTHON FUNCTIONALITY AND EXECUTE PYTHON CODE
 const python = pythonBridge();
 python.ex
 `
