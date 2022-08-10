@@ -1,5 +1,5 @@
 # SeqTrim
-This is a fast and streamlined function to trim low-quality bases and remove adaptor sequences. A ~10GB fastq file takes just minutes to trim if ran through python, and if using the python-bridge module in Node.js that time is cut in half. I have included both the pure python and the javascript files in the repo.
+SeqTrim is a fast and streamlined function to trim low-quality bases and remove adaptor sequences. A ~10GB fastq file takes just minutes to trim if ran through python, and if using the python-bridge module in Node.js that time is cut in half. I have included both the pure python and the javascript files in the repo.
 
 It takes four inputs: the path to the folder containing your fastq files, your adaptor sequence, the minimum read length you deem acceptable, and the minimum quality score you deem acceptable.
 
