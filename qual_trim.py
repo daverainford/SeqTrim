@@ -3,7 +3,7 @@ import os as os
 from tqdm import tqdm as tq
 
 #DEFINE FUNCTION TO QUALITY TRIM FASTQ FILES
-def qual_trim(file_path, adaptor, min_length, min_qual):
+def seqtrim(file_path, adaptor, min_length, min_qual):
     #SET WORKING DIRECTORY AND LIST FILES IN DIRECTORY
     os.chdir(file_path)
     files = os.listdir(file_path)
@@ -40,4 +40,4 @@ def qual_trim(file_path, adaptor, min_length, min_qual):
                     record = []
             record_list.append(line)
 
-qual_trim('path to fastq file folder', 'adaptor sequence', minimum read length(integer), minimum quality score(integer))
+seqtrim('path to fastq file folder', 'adaptor sequence', minimum read length(integer), minimum quality score(integer))
