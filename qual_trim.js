@@ -1,51 +1,82 @@
-//CALL MODULE
+// Call modules
 const pythonBridge = require('python-bridge');
+const lineReader = require('line-reader');
+const fs = require('fs')
 
-//CREATE PYTHON FUNCTIONALITY AND EXECUTE PYTHON CODE
-const python = pythonBridge();
-python.ex
-`
-#CALL LIBRARIES
-import os as os
+// Function to trim low quality bases and adaptor sequences
+function SeqTrim(fastq_path, temp_path, fasta_path, adaptor, min_qual, min_length) {
+	// Define seq list and chunk of sequence records to be written to file
+	const record = []
+	const chunk = []
+	// Iterate over lines in fastq file
+	lineReader.eachLine(fastq_path,(line,last)=>{
+		record.push(line)
+		if (record.length == 4) {
+			// Once seq list full, split list into one string to speed up python analysis then push to data chunk with linebreak
+			let data = record.join('split')
+			chunk.push(data + '\n')
+			record.length = 0
+		}
+		// If data chunk contains 1000000 seq lists, join the list and write to temp file
+		if (chunk.length == 1000000) {
+			fs.appendFile(temp_path, chunk.join(''), (err) => {
+				if (err) {
+					console.log(err);
+				} 
+			})
+			chunk.length = 0
+		}
+	})
 
-#DEFINE FUNCTION TO QUALITY TRIM FASTQ FILES
-def seqtrim(file_path, adaptor, min_length, min_qual):
-    #SET WORKING DIRECTORY AND LIST FILES IN DIRECTORY
-    os.chdir(file_path)
-    files = os.listdir(file_path)
-    for file in files:
-        #CREATE EMPTY LIST TO STORE LINES FROM IN FILE (FASTQ) AND CREATE OUT FILE (FASTA) TO APPEND LINES TO
-        record_list = []
-        trimmed = open('path to outfile folder' + file[0:-5] + 'fasta', 'a', newline = '')
-        file = open(file, 'r')
-        for line in file:
-            line = line.strip()
-            #ONCE A FULL RECORD HAS BEEN APPENDED TO (4 LINES) DUPLICATE LIST AND START SEQUENCE TRIMMING
-            if len(record_list) == 4:
-                record = record_list
-                #TRIM BASES WITH A LOWER QUALITY THAT THE SET MINIMUM PHRED SCORE
-                index = [record[3].index(i) for i in list(record[3]) if (ord(i) - 33) < min_qual]
-                list(set(index))
-                count = 0
-                for i in index:
-                    i = i - count
-                    record[1] = record[1][:i] + record[1][i+1:]
-                    count = count + 1
-                #REMOVE N BASES AND ADAPTOR SEQUENCES
-                record[1] = record[1].replace('N', '')
-                record[1] = record[1].replace(adaptor, '')
-                #IF THE LENGTH OF THE SEQUENCE IS GREATER THAN THE MINIMUM SEQUENCE LENGTH POST TRIMMING, WRITE TRIMMED RECORD TO OUT FILE
-                if len(record[1]) >= min_length:
-                    trimmed.write('>' + record[0][1:-1] + '''\n''' + record[1] + '''\n''')
-                    record_list = []
-                    record = []
-                #IF THE LENGTH OF THE SEQUENCE IS LESS THAN THE MINIMUM SEQUENCE LENGTH POST TRIMMING, WRITE ORIGINAL RECORD TO OUT FILE
-                else:
-                    trimmed.write('>' + record_list[0][1:-1] + '''\n''' + record_list[1] + '''\n''')
-                    record_list = []
-                    record = []
-            record_list.append(line)
+	// Define Python intepreter and python code
+	let python = pythonBridge();
+	python.ex
+	`
+	#Import library
+	import time
 
-seqtrim('path to fastq file folder', 'adaptor sequence', minimum read length(integer), minimum quality score(integer))
-`
-python.end()
+	#Start performance timer
+	startTime = time.time()
+	time.sleep(12)
+	
+	#Define file paths and start count for indexing
+	temp = open(${temp_path}, 'r')
+	trimmed = open(${fasta_path}, 'a')
+	count = 0
+	
+	#Iterate over lines in temp file
+	for line in temp:
+		#Split record back into seq list
+		record = line.split('split')
+		name = record[0]
+		seq = record[1]
+		qual = record[3]
+		#Trim adaptor if found in sequence
+		if ${adaptor} in seq:
+			adaptor_index.append(seq.find(${adaptor}))
+			adaptor_len = len(${adaptor})
+			seq = seq[:adaptor_index] + seq[adaptor_index + adaptor_len:]
+			qual = qual[:adaptor_index] + qual[adaptor_index + adaptor_len:]
+		#Get indexes of low quality and N bases then trim them
+		base_index = [seq.index(i) for i,j in zip(seq, qual) if i == 'N' or ord(j) - 33 < ${min_qual}]
+		for index in base_index:
+			index = index - count
+			seq = seq[:index] + seq[index + 1:]
+			qual = qual[:index] + qual[index + 1:]
+			count+=1
+		#If sequence length is greater than the minimum length, write trimmed sequence to fasta
+		if len(seq) >= ${min_length}:
+			trimmed.write(name.replace('@', '>') + '''\n''' + seq + '''\n''')
+		#If sequence length is less than the minimum length, write original sequence to fasta
+		else:
+			trimmed.write(name.replace('@', '>') + '''\n''' + record[0] + '''\n''')
+	
+	#Stop performance timer and print time elapsed since start
+	executionTime = (time.time() - startTime)
+	print('Execution time in seconds: ' + str(executionTime))
+	`
+	python.end()
+}
+
+// Call function
+SeqTrim('./fastq.fastq', './temp.fastq', 'trimmed.fasta', 'CTGTCTCTTATACACATCT', 20, 50);
