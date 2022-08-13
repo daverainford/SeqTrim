@@ -79,4 +79,4 @@ function SeqTrim(fastq_path, temp_path, fasta_path, adaptor, min_qual, min_lengt
 }
 
 // Call function
-SeqTrim('./fastq.fastq', './temp.fastq', 'trimmed.fasta', 'CTGTCTCTTATACACATCT', 20, 50);
+SeqTrim('infile.fastq', 'temp.fastq', 'outfile.fasta', 'CTGTCTCTTATACACATCT', 20, 50);
