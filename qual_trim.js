@@ -6,8 +6,8 @@ const fs = require('fs')
 // Function to trim low quality bases and adaptor sequences
 function SeqTrim(fastq_path, temp_path, fasta_path, adaptor, min_qual, min_length) {
 	// Define seq list and chunk of sequence records to be written to file
-	const record = []
-	const chunk = []
+	let record = []
+	let chunk = []
 	// Iterate over lines in fastq file
 	lineReader.eachLine(fastq_path,(line,last)=>{
 		record.push(line)
@@ -29,7 +29,7 @@ function SeqTrim(fastq_path, temp_path, fasta_path, adaptor, min_qual, min_lengt
 	})
 
 	// Define Python intepreter and python code
-	let python = pythonBridge();
+	const python = pythonBridge();
 	python.ex
 	`
 	#Import library
