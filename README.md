@@ -6,5 +6,6 @@ SeqTrim takes uncompressed FASTQ. It's output is also in an uncompressed format.
 
 # Usage
 ```
-python {installation_path}/main.py -r1 read1.fastq -r2 read2.fastq -a adaptor_sequence \n -m max_mismatches -w window_length -q phred-quality_threshold -o1 read1_output-path -o2 read2_output-path
+python {installation_path}/main.py -r1 read1.fastq -r2 read2.fastq -a adaptor_sequence <br>
+-m max_mismatches -w window_length -q phred-quality_threshold -o1 read1_output-path -o2 read2_output-path
 ```
